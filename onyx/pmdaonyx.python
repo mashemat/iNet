@@ -1,0 +1,212 @@
+#!/usr/bin/env pmpython
+from pcp.pmda import PMDA, pmdaIndom, pmdaMetric
+from cpmapi import PM_INDOM_NULL
+from cpmapi import PM_TYPE_32, PM_TYPE_U32, PM_TYPE_U64, PM_TYPE_STRING
+from cpmapi import PM_SEM_COUNTER, PM_SEM_INSTANT, PM_SEM_DISCRETE
+from cpmapi import PM_COUNT_ONE, PM_SPACE_BYTE, PM_SPACE_MBYTE, PM_TIME_MSEC, PM_TIME_SEC
+from cpmapi import PM_ERR_AGAIN, PM_ERR_PMID, PM_ERR_APPVERSION
+import http.client
+import ssl
+import json
+import ast
+import sys
+import socket
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
+from pcp.pmapi import pmUnits
+from pcp.pmapi import pmContext as PCP
+
+DEFAULT_USER   = 'root'
+class OnyxPMDA(PMDA):
+    """ PCP ONYX PMDA """
+    def __init__(self, name, domain):
+        """Constructor"""
+        PMDA.__init__(self,name, domain)
+        self.info = {}
+        self.user = DEFAULT_USER
+        self.ip = None
+        self.auth = None
+        self.pasw = None
+        self.cookie = None
+        self.int_s = None
+        self.conn = None
+        self.read_config()
+        self.setup_session()
+        if self.cookie == None:
+            self.log("Failed to connect the switch at %s" % (self.ip))
+        self.setup_metrics(name)
+        ## Continue
+        self.set_fetch_callback(self.fetch_callback)
+        self.set_user(PCP.pmGetConfig('PCP_USER'))
+    
+    def read_config(self):
+        """Read Config file"""
+        conffile = PCP.pmGetConfig('PCP_PMDAS_DIR')
+        conffile += '/' + self.read_name() + '/' + self.read_name() + '.conf'
+        if sys.version_info[0] >= 3 and sys.version_info[1] >= 2:
+            config = ConfigParser.ConfigParser()
+        else:
+            config = ConfigParser.SafeConfigParser()
+        config.read(conffile)
+        if config.has_section('pmda'):
+            for opt in config.options('pmda'):
+                if opt == 'user':
+                    self.user = config.get('pmda', opt)
+                elif opt == 'agent_ip':
+                    self.ip = config.get('pmda', opt)
+                elif opt == 'auth':
+                    self.auth = config.get('pmda', opt)
+                elif opt == 'pass':
+                    self.pasw = config.get('pmda', opt)
+                elif opt == 'interface':
+                    self.int_s = config.get('pmda', opt)
+                else:
+                    self.log("Invalid directive '%s' in %s.\n" % (opt, conffile))
+
+    def setup_session(self):
+        """Setup Connection"""
+        payload = 'f_user_id={}&f_password={}'.format(self.auth,self.pasw)
+        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        try:
+            conn = http.client.HTTPSConnection(self.ip,context = ssl._create_unverified_context())
+            conn.request("POST", "/admin/launch?script=rh&template=login&action=login", payload, headers)
+            res = conn.getresponse()
+            data = res.read()
+            cookie = dict(res.getheaders())['Set-Cookie'].split(';')[0]
+            self.cookie = cookie
+            self.conn = conn
+        except Exception as e:
+            self.log("Connection as %s to %s failed: %s\n" % (self.user, conn, e))
+
+    def setup_metrics(self, name):
+        """Setup the metric table"""
+        units_none  = pmUnits(0, 0, 0, 0, 0, 0)
+        units_count = pmUnits(0, 0, 1, 0, 0, PM_COUNT_ONE)
+        units_bytes = pmUnits(1, 0, 0, PM_SPACE_BYTE, 0, 0)
+        units_secs  = pmUnits(0, 1, 0, 0, PM_TIME_SEC, 0)
+        self.add_metric(
+                name + '.rx_no_buffer_discard', 
+                pmdaMetric(self.pmid(0, 0),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_count))
+        self.add_metric(name + '.rx_PFC_pause_duration',pmdaMetric(self.pmid(0,1),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_secs))
+        self.add_metric(name + '.rx_CNP_PG_max_usage',pmdaMetric(self.pmid(0,2),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_bytes))
+        self.add_metric(name + '.rx_CNP_buffer_usage',pmdaMetric(self.pmid(0,3),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_bytes))
+        self.add_metric(name + '.rx_PG_bytes',pmdaMetric(self.pmid(0,4),PM_TYPE_U64,PM_INDOM_NULL,PM_SEM_INSTANT,units_bytes))
+        self.add_metric(name + '.rx_PG_max_usage',pmdaMetric(self.pmid(0,5),PM_TYPE_U64,PM_INDOM_NULL,PM_SEM_INSTANT,units_bytes))
+        self.add_metric(name + '.rx_buffer_usage',pmdaMetric(self.pmid(0,6),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_bytes))
+        self.add_metric(name + '.rx_CNP_buffer_max_usage',pmdaMetric(self.pmid(0,7),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_bytes))
+        self.add_metric(name + '.rx_PFC_pause_packets',pmdaMetric(self.pmid(0,8),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_count))
+        self.add_metric(name + '.rx_CNP_PG_packets',pmdaMetric(self.pmid(0,9),PM_TYPE_U64,PM_INDOM_NULL,PM_SEM_INSTANT,units_count))
+        self.add_metric(name + '.rx_PG_usage',pmdaMetric(self.pmid(0,10),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_bytes))
+        self.add_metric(name + '.rx_CNP_PG_bytes',pmdaMetric(self.pmid(0,11),PM_TYPE_U64,PM_INDOM_NULL,PM_SEM_INSTANT,units_bytes))
+        self.add_metric(name + '.rx_buffer_max_usage',pmdaMetric(self.pmid(0,12),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_bytes))
+        self.add_metric(name + '.rx_CNP_no_buffer_discard',pmdaMetric(self.pmid(0,13),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_count))
+        self.add_metric(name + '.rx_PG_packets',pmdaMetric(self.pmid(0,14),PM_TYPE_U64,PM_INDOM_NULL,PM_SEM_INSTANT,units_count))
+        self.add_metric(name + '.rx_CNP_PG_usage',pmdaMetric(self.pmid(0,15),PM_TYPE_U64,PM_INDOM_NULL,PM_SEM_INSTANT,units_bytes))
+        self.add_metric(name + '.tx_PFC_pause_duration',pmdaMetric(self.pmid(0,16),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_secs))
+        self.add_metric(name + '.tx_TC_max_usage',pmdaMetric(self.pmid(0,17),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_bytes))
+        self.add_metric(name + '.tx_CNP_buffer_usage',pmdaMetric(self.pmid(0,18),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_bytes))
+        self.add_metric(name + '.tx_CNP_TC_usage',pmdaMetric(self.pmid(0,19),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_bytes))
+        self.add_metric(name + '.tx_TC_packets',pmdaMetric(self.pmid(0,20),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_count))
+        self.add_metric(name + '.tx_CNP_TC_bytes',pmdaMetric(self.pmid(0,21),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_bytes))
+        self.add_metric(name + '.tx_CNP_TC_packets',pmdaMetric(self.pmid(0,22),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_count))
+        self.add_metric(name + '.tx_CNP_buffer_max_usage',pmdaMetric(self.pmid(0,23),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_bytes))
+        self.add_metric(name + '.tx_PFC_pause_packets',pmdaMetric(self.pmid(0,24),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_count))
+        self.add_metric(name + '.tx_TC_bytes',pmdaMetric(self.pmid(0,25),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_bytes))
+        self.add_metric(name + '.tx_unicast_no_buffer_discard',pmdaMetric(self.pmid(0,26),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_count))
+        self.add_metric(name + '.tx_buffer_max_usage',pmdaMetric(self.pmid(0,27),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_bytes))
+        self.add_metric(name + '.tx_buffer_usage',pmdaMetric(self.pmid(0,28),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_bytes))
+        self.add_metric(name + '.tx_CNP_unicast_no_buffer_discard',pmdaMetric(self.pmid(0,29),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_count))
+        self.add_metric(name + '.tx_CNP_TC_max_usage',pmdaMetric(self.pmid(0,30),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_bytes))
+        self.add_metric(name + '.tx_TC_usage',pmdaMetric(self.pmid(0,31),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_bytes))
+        self.add_metric(name + '.tx_ECN_marked_packets',pmdaMetric(self.pmid(0,32),PM_TYPE_U32,PM_INDOM_NULL,PM_SEM_INSTANT,units_count))
+
+
+    def fetch_callback(self, cluster, item, inst):
+        command = "show interfaces {} counters roce".format(self.int_s)
+        headers = {'Content-Type': 'application/json','Cookie': self.cookie}
+        payload = json.dumps({"cmd": command})
+        if not cluster == 0:
+            return [PM_ERR_PMID, 0]
+        try:
+            self.conn.request("POST", "/admin/launch?script=json", payload, headers)
+            print('requested data')
+            res = self.conn.getresponse()
+            data = res.read().decode("utf-8")
+            output = ast.literal_eval(data)
+            interfaces = list(output['data'][0].keys())
+            rx_counters=output['data'][0][interfaces[0]][0]['Rx'][0]
+            tx_counters=output['data'][0][interfaces[0]][1]['Tx'][0]        
+        except Exception:
+            return [PM_ERR_AGAIN, 0]
+        if item == 0:
+            return [int(rx_counters['RoCE no buffer discard']), 1]
+        elif item==1:
+            return [int(rx_counters['RoCE PFC pause duration']),1]
+        elif item==2:
+            return [int(rx_counters['CNP PG max usage (bytes)']),1]
+        elif item==3:
+            return [int(rx_counters['CNP buffer usage (bytes)']),1]
+        elif item==4:
+            return [int(rx_counters['RoCE PG bytes']),1]
+        elif item==5:
+            return [int(rx_counters['RoCE PG max usage (bytes)']),1]
+        elif item==6:
+            return [int(rx_counters['RoCE buffer usage (bytes)']),1]
+        elif item==7:
+            return [int(rx_counters['CNP buffer max usage (bytes)']),1]
+        elif item==8:
+            return [int(rx_counters['RoCE PFC pause packets']),1]
+        elif item==9:
+            return [int(rx_counters['CNP PG packets']),1]
+        elif item==10:
+            return [int(rx_counters['RoCE PG usage (bytes)']),1]
+        elif item==11:
+            return [int(rx_counters['CNP PG bytes']),1]
+        elif item==12:
+            return [int(rx_counters['RoCE buffer max usage (bytes)']),1]
+        elif item==13:
+            return [int(rx_counters['CNP no buffer discard']),1]
+        elif item==14:
+            return [int(rx_counters['RoCE PG packets']),1]
+        elif item==15:
+            return [int(rx_counters['CNP PG usage (bytes)']),1]
+        elif item==16:
+            return [int(tx_counters['RoCE PFC pause duration']),1]
+        elif item==17:
+            return [int(tx_counters['RoCE TC max usage (bytes)']),1]
+        elif item==18:
+            return [int(tx_counters['CNP buffer usage (bytes)']),1]
+        elif item==19:
+            return [int(tx_counters['CNP TC usage (bytes)']),1]
+        elif item==20:
+            return [int(tx_counters['RoCE TC packets']),1]
+        elif item==21:
+            return [int(tx_counters['CNP TC bytes']),1]
+        elif item==22:
+            return [int(tx_counters['CNP TC packets']),1]
+        elif item==23:
+            return [int(tx_counters['CNP buffer max usage (bytes)']),1]
+        elif item==24:
+            return [int(tx_counters['RoCE PFC pause packets']),1]
+        elif item==25:
+            return [int(tx_counters['RoCE TC bytes']),1]
+        elif item==26:
+            return [int(tx_counters['RoCE unicast no buffer discard']),1]
+        elif item==27:
+            return [int(tx_counters['RoCE buffer max usage (bytes)']),1]
+        elif item==28:
+            return [int(tx_counters['RoCE buffer usage (bytes)']),1]
+        elif item==29:
+            return [int(tx_counters['CNP unicast no buffer discard']),1]
+        elif item==30:
+            return [int(tx_counters['CNP TC max usage (bytes)']),1]
+        elif item==31:
+            return [int(tx_counters['RoCE TC usage (bytes)']),1]
+        elif item==32:
+            return [int(tx_counters['ECN marked packets']),1]
+        return [PM_ERR_PMID, 0]
+
+if __name__ == '__main__':
+    OnyxPMDA('onyx', 400).run()
