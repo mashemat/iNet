@@ -1,6 +1,6 @@
 ## Open-MPI
 ### To install Open-MPI:
-visit: \ 
+visit:\
 https://www.open-mpi.org/software/ompi/v4.1/
 
 ### To run the MPI jobs with slurm
