@@ -51,5 +51,5 @@ For more information, visit:
 https://sflow-rt.com/define_flow.php
 
 ## PCP (Performance Co-Pilot)
-PCP is a framework and services to support system-level performance monitoring and performance management. The code can be found in the folder `pcp`.
+PCP is a framework and services to support system-level performance monitoring and performance management. The code can be found in the folder `pcp/onyx`.
 For more information regarding implementing a PMDA, visit: https://ryandoyle.net/posts/writing-a-pmda-for-pcp/
