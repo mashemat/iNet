@@ -50,6 +50,9 @@ Further, a filter can be added:
 For more information, visit: 
 https://sflow-rt.com/define_flow.php
 
-## PCP (Performance Co-Pilot)
+## Performance Co-Pilot (PCP)
 PCP is a framework and services to support system-level performance monitoring and performance management. The code can be found in the folder `pcp/onyx`.
 For more information regarding implementing a PMDA, visit: https://ryandoyle.net/posts/writing-a-pmda-for-pcp/
+
+## Open-MPI
+To test the monitoring tools on HPC message passing protocol, we made use of Message Passing Interface (MPI). The Open MPI is an open-source implementation of the Message Passing Interface (MPI). It RDMA through InfiniBand and RoCE protocols. The scipt used for testing can be found in in the folder `mpi`.
