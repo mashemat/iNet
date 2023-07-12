@@ -1,0 +1,26 @@
+#!/bin/bash
+#SBATCH -p fpgaq
+#SBATCH -N 2 # number of nodes
+#SBATCH -n 2 # number of cores
+#SBATCH --mem=0
+#SBATCH -w n017,n019
+#SBATCH -t 0-00:20 # time (D-HH:MM)
+#SBATCH -o slurm-%N-%j.out
+#SBATCH --exclusive
+
+ulimit -s 10240
+
+#export OMPI_MCA_btl_openib_allow_ib=1
+#export OMPI_MCA_btl_openib_warn_no_device_params_found=1
+#export OMPI_MCA_btl_openib_if_include=mlx5_2
+#export OMPI_MCA_btl=self,openib
+#export OMPI_MCA_btl=self
+#export OMPI_MCA_btl_tcp_if_exclude=lo,dis0,enp113s0f0
+
+module load openmpi/gcc/64/4.0.1
+
+export UCX_RNDV_THRESH=1M
+
+mpirun --rankfile rf_fpga  --display-map /home/andreast/nix_dpu_osu/bin/bibw.exe -m 16777216 -i 10 -x 10 -S 20 -y 1 -T 1 
+
+
