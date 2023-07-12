@@ -55,4 +55,4 @@ PCP is a framework and services to support system-level performance monitoring a
 For more information regarding implementing a PMDA, visit: https://ryandoyle.net/posts/writing-a-pmda-for-pcp/
 
 ## Open-MPI
-To test the monitoring tools on HPC message passing protocol, we made use of Message Passing Interface (MPI). The Open MPI is an open-source implementation of the Message Passing Interface (MPI). It RDMA through InfiniBand and RoCE protocols. The scipt used for testing can be found in in the folder `mpi`.
+To test the monitoring tools on the HPC message-passing protocol, the Message Passing Interface (MPI) was used. The Open MPI is an open-source implementation of the Message Passing Interface (MPI). It RDMA through InfiniBand and RoCE protocols. The script used for testing can be found in the folder `mpi`.
