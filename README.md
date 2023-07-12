@@ -25,8 +25,7 @@ https://hub.docker.com/r/sflow/flow-trend/
 For more information, visit:
 https://sFlow-RT.com
 
-The following window on the local host should be visible after starting the sflow-rt service with flow-trend app downloaded:
-<img width="1438" alt="image" src="https://github.com/niks16/iNet/assets/22795428/d0a4a51d-2c6d-4097-b3ba-62245e4a2ab6">
+A window on the local host should be visible after starting the sflow-rt service with flow-trend app downloaded.
 
 On defining the flow specification with the appropriate keys, the flow-trend graph shows only the RoCEv2 traffic.
 |Name| Comment|
@@ -45,7 +44,7 @@ On defining the flow specification with the appropriate keys, the flow-trend gra
 Further, a filter can be added:
 - udpdestinationport = 4791
 
-![image](https://github.com/niks16/iNet/assets/22795428/296612c9-d3d3-4be2-9b62-e929c53b4d56)
+![alt text](https://github.com/niks16/iNet/blob/main/info/sflow_RDMA_WRITE.png?raw=true)
 
 For more information, visit: 
 https://sflow-rt.com/define_flow.php
