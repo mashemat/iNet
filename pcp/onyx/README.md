@@ -8,6 +8,6 @@ https://pcp.io/download.html
 2. Execute `./Install`
 3. The metrics from the switch can be fetched using `pminfo -f`
    
-![alt text](https://github.com/niks16/iNet/blob/main/info/pcp_output.png?raw=true)
+![alt text](https://github.com/niks16/iNet/blob/main/screenshots/pcp_output.png?raw=true)
 
 
