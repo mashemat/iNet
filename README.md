@@ -44,7 +44,7 @@ On defining the flow specification with the appropriate keys, the flow-trend gra
 Further, a filter can be added:
 - udpdestinationport = 4791
 
-![alt text](https://github.com/niks16/iNet/blob/main/info/sflow_RDMA_WRITE.png?raw=true)
+![alt text](https://github.com/niks16/iNet/blob/main/screenshots/sflow_RDMA_WRITE.png?raw=true)
 
 For more information, visit: 
 https://sflow-rt.com/define_flow.php
