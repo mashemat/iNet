@@ -52,6 +52,7 @@ For more information, visit:
 https://sFlow-RT.com
 
 A window on the local host should be visible after starting the sflow-rt service with flow-trend app downloaded.
+![alt text](https://github.com/niks16/iNet/blob/main/screenshots/sflow_window.png?raw=true)
 
 On defining the flow specification with the appropriate keys, the flow-trend graph shows only the RoCEv2 traffic.
 |Name| Comment|
