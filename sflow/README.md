@@ -1,4 +1,3 @@
-# In Network Monitoring Strategies
 ## sFlow
 sFlow has two components: 
 - sFlow Agent - should be enabled within the switch to send sFlow datagrams to the collector
