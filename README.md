@@ -58,7 +58,7 @@ For more information regarding implementing a PMDA, visit: https://ryandoyle.net
 ## Evaluation
 ### Perf Benchmark Tests
 A set of bandwidth benchmarks was used to test the monitoring tools. The benchmarks generate a synthetic stream of operations, which is very useful for hardware and software benchmarking and analysis. The benchmarks are not designed to emulate any real application traffic. Real application traffic may be affected by many parameters, and hence might not be predictable based only on the results of those benchmarks.
-
+![alt text](https://github.com/niks16/iNet/blob/main/screenshots/perf_test.png?raw=true)
 
 ### MPI
 To test the monitoring tools on the HPC message-passing protocol, the Message Passing Interface (MPI) was used. The Open MPI is an open-source implementation of the Message Passing Interface (MPI). It RDMA through InfiniBand and RoCE protocols. The script used for testing can be found in the folder `mpi`.
