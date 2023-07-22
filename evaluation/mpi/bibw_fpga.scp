@@ -21,6 +21,6 @@ module load openmpi/gcc/64/4.0.1
 
 export UCX_RNDV_THRESH=1M
 
-mpirun --rankfile rf_fpga  --display-map /home/andreast/nix_dpu_osu/bin/bibw.exe -m 16777216 -i 10 -x 10 -S 20 -y 1 -T 1 
+mpirun --rankfile rf_fpga  --display-map bibw.exe -m 16777216 -i 10 -x 10 -S 20 -y 1 -T 1 
 
 
