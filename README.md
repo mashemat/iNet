@@ -50,7 +50,9 @@ For more information, visit:
 https://sflow-rt.com/define_flow.php
 
 ## Performance Co-Pilot (PCP)
-PCP is a framework and services to support system-level performance monitoring and performance management. The code can be found in the folder `pcp/onyx`.
+PCP is a framework and services to support system-level performance monitoring and performance management. The code can be found in the folder `pcp/onyx`. The metrics can be viewed both on command line and in a graphical way.
+![alt text](https://github.com/niks16/iNet/blob/main/screenshots/pcp.png?raw=true)
+
 For more information regarding implementing a PMDA, visit: https://ryandoyle.net/posts/writing-a-pmda-for-pcp/
 
 ## Open-MPI
