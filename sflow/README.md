@@ -5,6 +5,7 @@ sFlow has two components:
 - sFlow collector - collects sflow datagrams
 
 ### To configure sFlow Agent on the switch:
+Run these command in global config mode to configure sFlow paramenters
 ```
 switch (config)# protocol sflow
 switch (config)# sflow enable
@@ -13,6 +14,32 @@ switch (config sflow)# collector-ip aaa.bbb.ccc.ddd
 switch (config sflow)# sampling-rate 4000
 switch (config sflow)# counter-poll-interval 5
 ```
+Run this command on specific interface(s) to enable sFlow monitoring on the interface(s)
+```
+switch (config) # int ethernet 1/1
+switch (config interface ethernet 1/1) # sflow enable
+```
+Finally, you should be able to confirm the configuration, using the following command:
+```
+switch # show sflow
+
+sflow protocol: enabled
+sflow: enabled
+VRF name: default
+sampling-rate: 4000
+max-sample-size: 128
+counter-poll-interval: 10
+max-datagram-size: 1400
+collector ip: 10.128.15.1
+udp port: 6343
+ip-agent: 10.128.15.251
+
+ingress ports:
+Interfaces:
+Ethernet eth1/4 eth1/2 eth1/1 eth1/3
+Port-channel po13
+```
+
 ### To configure tools on the collector to visualize sFlow packets
 
 1. [Download sFlow-RT](https://sflow-rt.com/download.php)
@@ -48,12 +75,3 @@ Further, a filter can be added:
 
 For more information, visit: 
 https://sflow-rt.com/define_flow.php
-
-## Performance Co-Pilot (PCP)
-PCP is a framework and services to support system-level performance monitoring and performance management. The code can be found in the folder `pcp`. The metrics can be viewed both on command line and in a graphical way.
-![alt text](https://github.com/niks16/iNet/blob/main/screenshots/pcp.png?raw=true)
-
-For more information regarding implementing a PMDA, visit: https://ryandoyle.net/posts/writing-a-pmda-for-pcp/
-
-## Open-MPI
-To test the monitoring tools on the HPC message-passing protocol, the Message Passing Interface (MPI) was used. The Open MPI is an open-source implementation of the Message Passing Interface (MPI). It RDMA through InfiniBand and RoCE protocols. The script used for testing can be found in the folder `mpi`.
