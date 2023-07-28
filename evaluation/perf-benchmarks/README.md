@@ -19,8 +19,12 @@ On client side:
 ```
 ib_write_bw  -d mlx5_2 10.128.14.17 -R -F -D 100
 ```
-The screenshots from experiments are as follows:
-![alt text](https://github.com/niks16/iNet/blob/main/screenshots/RDMA_SEND_perf.png?raw=true)
-![alt text](https://github.com/niks16/iNet/blob/main/screenshots/RDMA_READ_perf.png?raw=true)
-![alt text](https://github.com/niks16/iNet/blob/main/screenshots/RDMA_WRITE_perf.png?raw=true)
-![alt text](https://github.com/niks16/iNet/blob/main/screenshots/RDMA_ATOMIC_perf.png?raw=true)
+The screenshots from the experiments are as follows:
+- RDMA Send
+  ![alt text](https://github.com/niks16/iNet/blob/main/screenshots/RDMA_SEND_perf.png?raw=true)
+- RDMA Read
+  ![alt text](https://github.com/niks16/iNet/blob/main/screenshots/RDMA_READ_perf.png?raw=true)
+- RDMA Write
+  ![alt text](https://github.com/niks16/iNet/blob/main/screenshots/RDMA_WRITE_perf.png?raw=true)
+- RDMA Atomic
+  ![alt text](https://github.com/niks16/iNet/blob/main/screenshots/RDMA_ATOMIC_perf.png?raw=true)
